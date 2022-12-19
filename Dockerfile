@@ -8,7 +8,7 @@ COPY dist/csv_sources ./csv_sources
 
 RUN npm install
 RUN mkdir -p ./db
-RUN node csv_sources/recreate.js
+RUN node csv_sources/dbcreate.js
 
 COPY dist/index.js ./index.js 
 
