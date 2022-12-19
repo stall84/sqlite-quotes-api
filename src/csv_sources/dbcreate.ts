@@ -16,7 +16,7 @@ const CSV_ATTEMPTS_MATCH = [
     '([^,]+), *"([^"]+)".*',
 ];
 // Below is an array to hold our matched quotes during an insert statement
-const ALREADY_ADDED = [];
+const ALREADY_ADDED: any = [];
 
 // serialize() is an sqlite3 control flow method which ensures command-objects are queued and executed sequentially
 db.serialize(() => {
@@ -36,8 +36,31 @@ db.serialize(() => {
             .forEach((csvLine: string) => {
                 for (let regexIndex in CSV_ATTEMPTS_MATCH) {
                     let match = csvLine.match(CSV_ATTEMPTS_MATCH[regexIndex]);
-                    // if (match && !ALREADY_ADDED.includes())
+                    if (match && !ALREADY_ADDED.includes(match[1]) && match[1].length > 10) {
+                        console.log(`in-match-statement: match: ${match}`)
+                        console.log(`in-match-statement: ALREADY_ADDED: ${ALREADY_ADDED}`)
+                        console.log(`in-match-statement - match[1]: ${match[1]} - match[2]: ${match[2]}`)
+                        insertStatement.run([
+                            match[1],
+                            match[2],
+                            csvFile.slice(0, -4)
+                        ]);
+                        ALREADY_ADDED.push(match[1]);
+                        break;
+                    }
                 }
-            })
+            });
+        insertStatement.finalize();
+        db.run("END;", () => console.log(`${csvFile} processed`));
     })
-})
+});
+
+db.run("CREATE INDEX IF NOT EXISTS tag_idx ON quotes(tag);");
+
+db.all("SELECT tag, COUNT(*) as c FROM quotes GROUP BY tag", (err, data) => {
+    console.log(data);
+});
+
+db.get("SELECT COUNT(*) c FROM quotes", (err, row) => {
+    console.log(row.c + " records added");
+});

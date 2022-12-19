@@ -1,3 +1,4 @@
+dist/*
 js-ecdocs
 node_modules
 data/quotes.db
@@ -7,3 +8,5 @@ data/quotes.db
 .terraform
 # the following can be excluded. Including only to make instant deploy faster
 db
+# Excluding the actual csv files from git
+csv_sources/csv/*
